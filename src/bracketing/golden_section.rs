@@ -1,15 +1,10 @@
 use crate::bracketing::bracket::Bracket;
+use crate::Point;
 use std::f64;
 
 const FN1_FN: f64 = 0.618_033_988_749_894_9;
 const FN2_FN: f64 = 0.381_966_011_250_105_15;
 const MAX_OPT_ITER: u32 = 1_000_000;
-
-#[derive(Debug)]
-pub struct Point {
-    pub x: f64,
-    pub f_x: f64,
-}
 
 pub fn search(bracket: &Bracket) -> Point {
     let (mut left, mut right) = bracket.interval();
@@ -32,7 +27,7 @@ pub fn search(bracket: &Bracket) -> Point {
     }
     Point {
         x: right_new,
-        f_x: y_right_new,
+        y: y_right_new,
     }
 }
 
@@ -51,7 +46,7 @@ mod tests {
         let point = search(&br);
         // error in evaluating f(x) leads to poor precision of x
         assert!(f64::abs(point.x - 2.0) <= POOR_PRECISION);
-        assert!(f64::abs(point.f_x) <= f64::EPSILON);
+        assert!(f64::abs(point.y) <= f64::EPSILON);
     }
 
     #[test]
@@ -61,7 +56,7 @@ mod tests {
         let point = search(&br);
         assert!(point.x < -0.1172);
         assert!(point.x > -0.1173);
-        assert!(point.f_x < -0.0138);
-        assert!(point.f_x > -0.0139);
+        assert!(point.y < -0.0138);
+        assert!(point.y > -0.0139);
     }
 }
