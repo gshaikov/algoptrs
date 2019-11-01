@@ -60,6 +60,7 @@ impl Bracket {
 mod tests {
 
     use super::*;
+    use std::f64;
 
     #[test]
     fn find_quadratic() {
@@ -68,6 +69,15 @@ mod tests {
         assert!(br.left < br.right);
         assert!(br.left <= 2.0);
         assert!(br.right >= 2.0);
+    }
+
+    #[test]
+    fn find_complex() {
+        let func = |x: f64| f64::exp(x) * f64::sin(x / 4.0 + x * x);
+        let br = Bracket::find(func).unwrap();
+        assert!(br.left < br.right);
+        assert!(br.left <= -0.116);
+        assert!(br.right >= -0.118);
     }
 
     #[test]
