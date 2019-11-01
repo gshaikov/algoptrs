@@ -1,4 +1,4 @@
-pub mod braketing;
+pub mod bracketing;
 pub mod differentiate;
 
 #[derive(Debug)]

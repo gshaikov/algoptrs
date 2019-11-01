@@ -1,4 +1,5 @@
 use crate::Infeasible;
+use std::f64;
 
 /// Bracket contains a local minimum of the function.
 /// Invariant: left < right
@@ -13,6 +14,11 @@ impl Bracket {
     const GAP: f64 = 1e-2;
     const STEP_FACTOR: f64 = 2.0;
     const MAX_ITER: u32 = 1_000_000;
+
+    pub fn interval(&self) -> (f64, f64) {
+        (self.left, self.right)
+    }
+
     /// Given a univariate function, find and return a bracket [left, right]
     /// that encapsulates a local minimum of this function.
     pub fn find(func: fn(f64) -> f64) -> Result<Bracket, Infeasible> {
@@ -33,6 +39,9 @@ impl Bracket {
     fn find_with_bracket(mut bracket: Bracket, mut step: f64) -> Result<Bracket, Infeasible> {
         let mut y_right = (bracket.func)(bracket.right);
         for _ in 0..Self::MAX_ITER {
+            if f64::abs(step) >= f64::MAX / Self::STEP_FACTOR - 1.0 {
+                return Err(Infeasible("step overflown"));
+            }
             let right_new = bracket.right + step;
             let y_right_new = (bracket.func)(right_new);
             if y_right_new > y_right {
@@ -60,7 +69,6 @@ impl Bracket {
 mod tests {
 
     use super::*;
-    use std::f64;
 
     #[test]
     fn find_quadratic() {
@@ -81,11 +89,21 @@ mod tests {
     }
 
     #[test]
-    fn find_error() -> Result<(), String> {
+    fn find_error_slope_up() -> Result<(), String> {
         let func = |x: f64| x;
         let br = Bracket::find(func);
         match br {
-            Bracket => Err(format!("Bracket for a funciton without a minimum")),
+            Ok(_) => Err("Bracket for a funciton without a minimum".to_string()),
+            Err(_) => Ok(()),
+        }
+    }
+
+    #[test]
+    fn find_error_slope_down() -> Result<(), String> {
+        let func = |x: f64| -x;
+        let br = Bracket::find(func);
+        match br {
+            Ok(_) => Err("Bracket for a funciton without a minimum".to_string()),
             Err(_) => Ok(()),
         }
     }
@@ -147,8 +165,23 @@ mod tests {
     }
 
     #[test]
-    fn find_with_bracket_error() -> Result<(), String> {
+    fn find_with_bracket_error_slope_up() -> Result<(), String> {
         let func = |x: f64| x;
+        let br = Bracket {
+            func,
+            left: 0.0,
+            right: 0.01,
+        };
+        let br = Bracket::find_with_bracket(br, -0.01);
+        match br {
+            Ok(_) => Err("Bracket for a funciton without a minimum".to_string()),
+            Err(_) => Ok(()),
+        }
+    }
+
+    #[test]
+    fn find_with_bracket_error_slope_down() -> Result<(), String> {
+        let func = |x: f64| -x;
         let br = Bracket {
             func,
             left: 0.0,
@@ -156,7 +189,7 @@ mod tests {
         };
         let br = Bracket::find_with_bracket(br, 0.01);
         match br {
-            Bracket => Err(format!("Bracket for a funciton without a minimum")),
+            Ok(_) => Err("Bracket for a funciton without a minimum".to_string()),
             Err(_) => Ok(()),
         }
     }
