@@ -35,6 +35,7 @@ pub fn search(bracket: &Bracket) -> Point {
 mod tests {
 
     use super::*;
+    use crate::close;
     use std::f64;
 
     const POOR_PRECISION: f64 = 1e-6;
@@ -46,7 +47,7 @@ mod tests {
         let point = search(&br);
         // error in evaluating f(x) leads to poor precision of x
         assert!(f64::abs(point.x - 2.0) <= POOR_PRECISION);
-        assert!(f64::abs(point.y) <= f64::EPSILON);
+        assert!(close(point.y, 0.0));
     }
 
     #[test]
