@@ -1,3 +1,5 @@
+extern crate num;
+
 pub mod bracketing;
 pub mod differentiate;
 
